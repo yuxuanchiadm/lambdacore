@@ -4,6 +4,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
 import org.lambdacore.core.LambdaTermBuilder;
-
+import org.lambdacore.core.LambdaTermBuilder.Binding;
 import org.lamcalcj.ast.Lambda.Identifier;
 import org.lamcalcj.ast.Lambda.Term;
 import org.lamcalcj.parser.syntax.Parser;
@@ -168,29 +169,36 @@ public class JLambdaCoreFrame extends JFrame {
 		JButton buttonBetaReduce = new JButton("Beta Reduce");
 		buttonBetaReduce.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int maxStep;
 				try {
-					maxStep = Integer.parseInt(textFieldBetaReduceMaxStep.getText());
-				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Can not parse max step");
+					int maxStep;
+					try {
+						maxStep = Integer.parseInt(textFieldBetaReduceMaxStep.getText());
+					} catch (NumberFormatException ex) {
+						JOptionPane.showMessageDialog(null, "Can not parse max step");
+						return;
+					}
+					boolean headOnly = checkBoxBetaReduceHeadOnly.isSelected();
+					boolean evaluationOnly = checkBoxBetaReduceEvaluationOnly.isSelected();
+					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
+					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
+					boolean chainApplication = checkBoxChainApplication.isSelected();
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser
+						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (result.isLeft()) {
+						JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
+						return;
+					}
+					Term term = result.right().get()._2;
+					Term resultTerm = BetaReducer.betaReduction(term, maxStep, headOnly, evaluationOnly)._2;
+					textPaneOutput.setText(
+						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
+							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(null, "Internal Error: " + ex.toString());
+					ex.printStackTrace();
 					return;
 				}
-				boolean headOnly = checkBoxBetaReduceHeadOnly.isSelected();
-				boolean evaluationOnly = checkBoxBetaReduceEvaluationOnly.isSelected();
-				boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
-				boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
-				boolean chainApplication = checkBoxChainApplication.isSelected();
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser.parse(
-					new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
-					Parser.parse$default$3());
-				if (result.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
-					return;
-				}
-				Term term = result.right().get()._2;
-				Term resultTerm = BetaReducer.betaReduction(term, maxStep, headOnly, evaluationOnly)._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
-					omitRedundantGroup, uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 			}
 		});
 		panelBetaReduce.add(buttonBetaReduce);
@@ -216,29 +224,36 @@ public class JLambdaCoreFrame extends JFrame {
 		JButton buttonEtaConversion = new JButton("Eta Conversion");
 		buttonEtaConversion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int maxStep;
 				try {
-					maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
-				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Can not parse max step");
+					int maxStep;
+					try {
+						maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
+					} catch (NumberFormatException ex) {
+						JOptionPane.showMessageDialog(null, "Can not parse max step");
+						return;
+					}
+					boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
+					boolean evaluationOnly = checkBoxEtaConversionEvaluationOnly.isSelected();
+					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
+					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
+					boolean chainApplication = checkBoxChainApplication.isSelected();
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser
+						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (result.isLeft()) {
+						JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
+						return;
+					}
+					Term term = result.right().get()._2;
+					Term resultTerm = EtaConverter.etaConversion(term, maxStep, headOnly, evaluationOnly)._2;
+					textPaneOutput.setText(
+						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
+							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(null, "Internal Error: " + ex.toString());
+					ex.printStackTrace();
 					return;
 				}
-				boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
-				boolean evaluationOnly = checkBoxEtaConversionEvaluationOnly.isSelected();
-				boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
-				boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
-				boolean chainApplication = checkBoxChainApplication.isSelected();
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser.parse(
-					new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
-					Parser.parse$default$3());
-				if (result.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
-					return;
-				}
-				Term term = result.right().get()._2;
-				Term resultTerm = EtaConverter.etaConversion(term, maxStep, headOnly, evaluationOnly)._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
-					omitRedundantGroup, uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 			}
 		});
 		panelEtaConversion.add(buttonEtaConversion);
@@ -409,7 +424,10 @@ public class JLambdaCoreFrame extends JFrame {
 	public void addCombinator(boolean isApplyTerm, JPanel panel, Set<String> combinatorSet) {
 		for (String combinator : combinatorSet) {
 			if (isApplyTerm) {
+				Binding binding = lambdaTermBuilder.bindingMap.get(combinator);
 				JCheckBox checkBox = new JCheckBox(combinator, applyTermMap.get(combinator));
+				checkBox.setToolTipText(binding.getVariable()
+					+ Optional.ofNullable(binding.getType()).map(type -> " : " + type).orElse(""));
 				checkBox.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -418,7 +436,10 @@ public class JLambdaCoreFrame extends JFrame {
 				});
 				panel.add(checkBox);
 			} else {
+				Binding binding = lambdaTermBuilder.bindingMap.get(combinator);
 				JButton button = new JButton(combinator);
+				button.setToolTipText(binding.getVariable()
+					+ Optional.ofNullable(binding.getType()).map(type -> " : " + type).orElse(""));
 				button.addActionListener(new ActionListener() {
 
 					@Override
