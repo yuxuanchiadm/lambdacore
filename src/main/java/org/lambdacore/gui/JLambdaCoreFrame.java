@@ -392,6 +392,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 		textFieldNumberLiteral = new JTextField("0");
 		textPaneApplyNumberLiteral = new JTextPane();
+		textPaneApplyNumberLiteral.setText("#0; #1;\n#2 - 3");
 
 		buildCombinatorPanel();
 	}
@@ -502,14 +503,15 @@ public class JLambdaCoreFrame extends JFrame {
 
 	public Set<String> getApplyNumberLiteral() {
 		Set<String> applyNumberLiteral = new HashSet<>();
-		for (String pat : textPaneApplyNumberLiteral.getText().replaceAll("\\s", "").split(";")) {
-			if (pat.isEmpty())
+		for (String pat : textPaneApplyNumberLiteral.getText().split(";")) {
+			pat = pat.trim();
+			if (pat.isEmpty() || (pat.startsWith("#")))
 				continue;
 			int rangeSplitterIndex = pat.indexOf('-');
 			if (rangeSplitterIndex == -1) {
 				int lit;
 				try {
-					lit = Integer.parseInt(pat);
+					lit = Integer.parseUnsignedInt(pat.trim());
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
 					return new HashSet<>();
@@ -519,8 +521,8 @@ public class JLambdaCoreFrame extends JFrame {
 				int start;
 				int end;
 				try {
-					start = Integer.parseInt(pat.substring(0, rangeSplitterIndex));
-					end = Integer.parseInt(pat.substring(rangeSplitterIndex + 1, pat.length()));
+					start = Integer.parseUnsignedInt(pat.substring(0, rangeSplitterIndex).trim());
+					end = Integer.parseUnsignedInt(pat.substring(rangeSplitterIndex + 1, pat.length()).trim());
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
 					return new HashSet<>();
@@ -531,7 +533,7 @@ public class JLambdaCoreFrame extends JFrame {
 				JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
 				return new HashSet<>();
 			}
-		} ;
+		}
 		return applyNumberLiteral;
 	}
 
