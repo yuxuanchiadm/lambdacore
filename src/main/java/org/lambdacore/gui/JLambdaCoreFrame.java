@@ -182,15 +182,19 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
 					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxChainApplication.isSelected();
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
 						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
-					if (result.isLeft()) {
-						JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
 						return;
 					}
-					Term term = result.right().get()._2;
-					Term resultTerm = BetaReducer.betaReduction(term, maxStep, headOnly, evaluationOnly)._2;
+					Term term = parserResult.right().get()._2;
+					Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, maxStep, headOnly,
+						evaluationOnly);
+					if (!betaReducerResult._1.equals(Boolean.TRUE))
+						JOptionPane.showMessageDialog(null, "Beta reducer not halt in " + maxStep + " step");
+					Term resultTerm = betaReducerResult._2;
 					textPaneOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
@@ -237,15 +241,19 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
 					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxChainApplication.isSelected();
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> result = Parser
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
 						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
-					if (result.isLeft()) {
-						JOptionPane.showMessageDialog(null, "Parser Error: " + result.left().get());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
 						return;
 					}
-					Term term = result.right().get()._2;
-					Term resultTerm = EtaConverter.etaConversion(term, maxStep, headOnly, evaluationOnly)._2;
+					Term term = parserResult.right().get()._2;
+					Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, maxStep, headOnly,
+						evaluationOnly);
+					if (!etaConverterResult._1.equals(Boolean.TRUE))
+						JOptionPane.showMessageDialog(null, "Eta converter not halt in " + maxStep + " step");
+					Term resultTerm = etaConverterResult._2;
 					textPaneOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
