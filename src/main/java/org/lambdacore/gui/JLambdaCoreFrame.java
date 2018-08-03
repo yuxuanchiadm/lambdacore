@@ -39,6 +39,7 @@ import org.lamcalcj.ast.Lambda.Identifier;
 import org.lamcalcj.ast.Lambda.Term;
 import org.lamcalcj.parser.syntax.Parser;
 import org.lamcalcj.pretty.PrettyPrint;
+import org.lamcalcj.pretty.Symbols;
 import org.lamcalcj.reducer.BetaReducer;
 import org.lamcalcj.reducer.EtaConverter;
 
@@ -265,6 +266,104 @@ public class JLambdaCoreFrame extends JFrame {
 			}
 		});
 		panelEtaConversion.add(buttonEtaConversion);
+
+		JPanel panelExport = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) panelExport.getLayout();
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		panelControl.add(panelExport);
+
+		JLabel lblExport = new JLabel("Export:");
+		panelExport.add(lblExport);
+
+		JButton buttonJava = new JButton("Java");
+		buttonJava.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
+					true, PrettyPrint.printLambda$default$6()));
+			}
+		});
+		panelExport.add(buttonJava);
+
+		JButton buttonScala = new JButton("Scala");
+		buttonScala.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		panelExport.add(buttonScala);
+
+		JButton buttonClojure = new JButton("Clojure");
+		buttonClojure.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		panelExport.add(buttonClojure);
+
+		JButton buttonJavaScript = new JButton("JavaScript");
+		buttonJavaScript.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		panelExport.add(buttonJavaScript);
+
+		JButton buttonHaskell = new JButton("Haskell");
+		buttonHaskell.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		panelExport.add(buttonHaskell);
 
 		JPanel panelOther = new JPanel();
 		FlowLayout fl_panelOther = (FlowLayout) panelOther.getLayout();
