@@ -42,8 +42,10 @@ import org.lamcalcj.pretty.PrettyPrint;
 import org.lamcalcj.pretty.Symbols;
 import org.lamcalcj.reducer.BetaReducer;
 import org.lamcalcj.reducer.EtaConverter;
+import org.lamcalcj.utils.Utils;
 
 import scala.Tuple2;
+import scala.collection.JavaConversions;
 import scala.util.Either;
 
 public class JLambdaCoreFrame extends JFrame {
@@ -62,7 +64,7 @@ public class JLambdaCoreFrame extends JFrame {
 	private JCheckBox checkBoxEtaConversionEvaluationOnly;
 	private JTextPane textPaneInput;
 	private JTextPane textPaneOutput;
-	private JCheckBox checkBoxApplyTerm;
+	private JCheckBox checkBoxApply;
 	private JPanel panelFunction;
 	private JPanel panelNat;
 	private JPanel panelBool;
@@ -175,7 +177,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try {
 						maxStep = Integer.parseInt(textFieldBetaReduceMaxStep.getText());
 					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(null, "Can not parse max step");
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
 						return;
 					}
 					boolean headOnly = checkBoxBetaReduceHeadOnly.isSelected();
@@ -184,23 +186,25 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
 					Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, maxStep, headOnly,
 						evaluationOnly);
 					if (!betaReducerResult._1.equals(Boolean.TRUE))
-						JOptionPane.showMessageDialog(null, "Beta reducer not halt in " + maxStep + " step");
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Beta reducer not halt in " + maxStep + " step");
 					Term resultTerm = betaReducerResult._2;
 					textPaneOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(null, "Internal Error: " + ex.toString());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
 					ex.printStackTrace();
 					return;
 				}
@@ -234,7 +238,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try {
 						maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
 					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(null, "Can not parse max step");
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
 						return;
 					}
 					boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
@@ -243,23 +247,25 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
 					Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, maxStep, headOnly,
 						evaluationOnly);
 					if (!etaConverterResult._1.equals(Boolean.TRUE))
-						JOptionPane.showMessageDialog(null, "Eta converter not halt in " + maxStep + " step");
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Eta converter not halt in " + maxStep + " step");
 					Term resultTerm = etaConverterResult._2;
 					textPaneOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(null, "Internal Error: " + ex.toString());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
 					ex.printStackTrace();
 					return;
 				}
@@ -279,10 +285,10 @@ public class JLambdaCoreFrame extends JFrame {
 		buttonJava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 						Parser.parse$default$3());
 				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
 					return;
 				}
 				Term term = parserResult.right().get()._2;
@@ -297,10 +303,10 @@ public class JLambdaCoreFrame extends JFrame {
 		buttonScala.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 						Parser.parse$default$3());
 				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
 					return;
 				}
 				Term term = parserResult.right().get()._2;
@@ -315,10 +321,10 @@ public class JLambdaCoreFrame extends JFrame {
 		buttonClojure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 						Parser.parse$default$3());
 				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
 					return;
 				}
 				Term term = parserResult.right().get()._2;
@@ -333,10 +339,10 @@ public class JLambdaCoreFrame extends JFrame {
 		buttonJavaScript.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 						Parser.parse$default$3());
 				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
 					return;
 				}
 				Term term = parserResult.right().get()._2;
@@ -351,10 +357,10 @@ public class JLambdaCoreFrame extends JFrame {
 		buttonHaskell.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyTerm(textPaneInput.getText())), Parser.parse$default$2(),
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 						Parser.parse$default$3());
 				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(null, "Parser Error: " + parserResult.left().get());
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
 					return;
 				}
 				Term term = parserResult.right().get()._2;
@@ -364,6 +370,71 @@ public class JLambdaCoreFrame extends JFrame {
 			}
 		});
 		panelExport.add(buttonHaskell);
+
+		JPanel panelDependencies = new JPanel();
+		FlowLayout flowLayout_1 = (FlowLayout) panelDependencies.getLayout();
+		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		panelControl.add(panelDependencies);
+
+		JLabel lblDependencies = new JLabel("Dependencies: ");
+		panelDependencies.add(lblDependencies);
+
+		JButton buttonSolve = new JButton("Solve");
+		buttonSolve.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				Set<String> freeVariables = JavaConversions
+					.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
+					.map(Identifier::name).collect(Collectors.toSet());
+				Set<String> numberLiteralDependencies = new HashSet<>();
+				Set<String> satisfiedDependencies = new HashSet<>();
+				Set<String> unsatisfiedDependencies = new HashSet<>();
+				freeVariables.forEach(freeVariable -> (lambdaTermBuilder.parseNatLiteral(freeVariable).isPresent()
+					? numberLiteralDependencies
+					: applyTermMap.containsKey(freeVariable) ? satisfiedDependencies : unsatisfiedDependencies)
+						.add(freeVariable));
+				int optionSelected = JOptionPane.showConfirmDialog(JLambdaCoreFrame.this,
+					"Number literal: " + numberLiteralDependencies + "\n" + "Satisfied: " + satisfiedDependencies + "\n"
+						+ "Unsatisfied: " + unsatisfiedDependencies + "\n" + "Apply available dependencies?",
+					"Solved new dependencies", JOptionPane.OK_CANCEL_OPTION);
+				if (optionSelected == JOptionPane.OK_OPTION) {
+					String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
+						(s, lit) -> s + lit + ";");
+					if (!textPaneApplyNumberLiteral.getText().isEmpty()
+						&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
+						applyNumberLiteral = ";" + applyNumberLiteral;
+					textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
+					satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
+				}
+				buildCombinatorPanel();
+			}
+		});
+
+		checkBoxApply = new JCheckBox("Apply");
+		panelDependencies.add(checkBoxApply);
+		checkBoxApply.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buildCombinatorPanel();
+			}
+		});
+		panelDependencies.add(buttonSolve);
+
+		JButton buttonClear = new JButton("Clear");
+		buttonClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				lambdaTermBuilder.bindingMap.keySet().forEach(variable -> applyTermMap.put(variable, false));
+				buildCombinatorPanel();
+			}
+		});
+		panelDependencies.add(buttonClear);
 
 		JPanel panelOther = new JPanel();
 		FlowLayout fl_panelOther = (FlowLayout) panelOther.getLayout();
@@ -377,15 +448,6 @@ public class JLambdaCoreFrame extends JFrame {
 				textPaneInput.replaceSelection("λ");
 			}
 		});
-
-		checkBoxApplyTerm = new JCheckBox("ApplyTerm");
-		checkBoxApplyTerm.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buildCombinatorPanel();
-			}
-		});
-		panelOther.add(checkBoxApplyTerm);
 
 		JButton buttonUndo = new JButton("Undo");
 		buttonUndo.setToolTipText("Ctrl+Z");
@@ -497,7 +559,7 @@ public class JLambdaCoreFrame extends JFrame {
 	}
 
 	public void buildCombinatorPanel() {
-		boolean isApplyTerm = checkBoxApplyTerm.isSelected();
+		boolean isApplyDependencies = checkBoxApply.isSelected();
 
 		Set<String> functionCombinatorSet = lambdaTermBuilder.categoryMap.get("function");
 		Set<String> natCombinatorSet = lambdaTermBuilder.categoryMap.get("nat");
@@ -507,31 +569,31 @@ public class JLambdaCoreFrame extends JFrame {
 
 		panelFunction.removeAll();
 		panelFunction.add(new JLabel("Function:"));
-		addCombinator(isApplyTerm, panelFunction, functionCombinatorSet);
+		addCombinator(isApplyDependencies, panelFunction, functionCombinatorSet);
 
 		panelNat.removeAll();
 		panelNat.add(new JLabel("Nat:"));
-		addNumberLiteral(isApplyTerm, panelNat);
-		addCombinator(isApplyTerm, panelNat, natCombinatorSet);
+		addNumberLiteral(isApplyDependencies, panelNat);
+		addCombinator(isApplyDependencies, panelNat, natCombinatorSet);
 
 		panelBool.removeAll();
 		panelBool.add(new JLabel("Bool:"));
-		addCombinator(isApplyTerm, panelBool, boolCombinatorSet);
+		addCombinator(isApplyDependencies, panelBool, boolCombinatorSet);
 
 		panelMaybe.removeAll();
 		panelMaybe.add(new JLabel("Maybe:"));
-		addCombinator(isApplyTerm, panelMaybe, maybeCombinatorSet);
+		addCombinator(isApplyDependencies, panelMaybe, maybeCombinatorSet);
 
 		panelList.removeAll();
 		panelList.add(new JLabel("List:"));
-		addCombinator(isApplyTerm, panelList, listCombinatorSet);
+		addCombinator(isApplyDependencies, panelList, listCombinatorSet);
 
 		panelCombinator.revalidate();
 	}
 
-	public void addCombinator(boolean isApplyTerm, JPanel panel, Set<String> combinatorSet) {
+	public void addCombinator(boolean isApplyDependencies, JPanel panel, Set<String> combinatorSet) {
 		for (String combinator : combinatorSet) {
-			if (isApplyTerm) {
+			if (isApplyDependencies) {
 				Binding binding = lambdaTermBuilder.bindingMap.get(combinator);
 				JCheckBox checkBox = new JCheckBox(combinator, applyTermMap.get(combinator));
 				checkBox.setToolTipText(binding.getVariable()
@@ -560,8 +622,8 @@ public class JLambdaCoreFrame extends JFrame {
 		}
 	}
 
-	public void addNumberLiteral(boolean isApplyTerm, JPanel panel) {
-		if (isApplyTerm) {
+	public void addNumberLiteral(boolean isApplyDependencies, JPanel panel) {
+		if (isApplyDependencies) {
 			JButton button = new JButton("literal");
 			panel.add(button);
 
@@ -589,7 +651,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try {
 						lit = Integer.parseInt(textFieldNumberLiteral.getText());
 					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(null, "Can not parse number literal");
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse number literal");
 						return;
 					}
 					String result = lambdaTermBuilder.buildNatLiteral(lit);
@@ -612,7 +674,7 @@ public class JLambdaCoreFrame extends JFrame {
 				try {
 					lit = Integer.parseUnsignedInt(pat.trim());
 				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
+					JOptionPane.showMessageDialog(this, "Illegal apply number literal syntax");
 					return new HashSet<>();
 				}
 				applyNumberLiteral.add(Integer.toString(lit));
@@ -623,21 +685,21 @@ public class JLambdaCoreFrame extends JFrame {
 					start = Integer.parseUnsignedInt(pat.substring(0, rangeSplitterIndex).trim());
 					end = Integer.parseUnsignedInt(pat.substring(rangeSplitterIndex + 1, pat.length()).trim());
 				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
+					JOptionPane.showMessageDialog(this, "Illegal apply number literal syntax");
 					return new HashSet<>();
 				}
 				for (int i = start; i <= end; i++)
 					applyNumberLiteral.add(Integer.toString(i));
 			} else {
-				JOptionPane.showMessageDialog(null, "Illegal apply number literal syntax");
+				JOptionPane.showMessageDialog(this, "Illegal apply number literal syntax");
 				return new HashSet<>();
 			}
 		}
 		return applyNumberLiteral;
 	}
 
-	public String applyTerm(String term) {
-		if (!checkBoxApplyTerm.isSelected())
+	public String applyDependencies(String term) {
+		if (!checkBoxApply.isSelected())
 			return term;
 		Set<String> dependencies = applyTermMap.entrySet().stream().filter(Entry::getValue).map(Entry::getKey)
 			.collect(Collectors.toCollection(HashSet::new));
