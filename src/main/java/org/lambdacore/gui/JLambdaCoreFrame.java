@@ -430,6 +430,7 @@ public class JLambdaCoreFrame extends JFrame {
 		JButton buttonClear = new JButton("Clear");
 		buttonClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				textPaneApplyNumberLiteral.setText("");
 				lambdaTermBuilder.bindingMap.keySet().forEach(variable -> applyTermMap.put(variable, false));
 				buildCombinatorPanel();
 			}
