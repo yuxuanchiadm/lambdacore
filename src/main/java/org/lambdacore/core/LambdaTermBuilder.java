@@ -22,14 +22,16 @@ public class LambdaTermBuilder {
 	public void beginCategory(String categoryName) {
 		if (currentCategoryName != null)
 			throw new IllegalStateException("Already has current category");
+		Set<String> newCategory = categoryMap.get(categoryName);
+		if (newCategory == null)
+			categoryMap.put(categoryName, newCategory = new HashSet<>());
 		currentCategoryName = categoryName;
-		currentCategory = new HashSet<>();
+		currentCategory = newCategory;
 	}
 
 	public void endCategory() {
 		if (currentCategoryName == null)
 			throw new IllegalStateException("No current category");
-		categoryMap.put(currentCategoryName, currentCategory);
 		currentCategoryName = null;
 		currentCategory = null;
 	}

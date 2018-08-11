@@ -13,7 +13,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,10 +26,12 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
@@ -47,6 +49,10 @@ import org.lamcalcj.utils.Utils;
 import scala.Tuple2;
 import scala.collection.JavaConversions;
 import scala.util.Either;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 
 public class JLambdaCoreFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -55,16 +61,16 @@ public class JLambdaCoreFrame extends JFrame {
 	private UndoManager undoManager;
 	private JTextField textFieldBetaReduceMaxStep;
 	private JTextField textFieldEtaConversionMaxStep;
-	private JCheckBox checkBoxOmitRedundantGroup;
-	private JCheckBox checkBoxUncurryingAbstraction;
-	private JCheckBox checkBoxChainApplication;
+	private JCheckBoxMenuItem checkBoxMenuItemOmitRedundantGroup;
+	private JCheckBoxMenuItem checkBoxMenuItemUncurryingAbstraction;
+	private JCheckBoxMenuItem checkBoxMenuItemChainApplication;
 	private JCheckBox checkBoxBetaReduceHeadOnly;
 	private JCheckBox checkBoxBetaReduceEvaluationOnly;
 	private JCheckBox checkBoxEtaConversionHeadOnly;
 	private JCheckBox checkBoxEtaConversionEvaluationOnly;
 	private JTextPane textPaneInput;
 	private JTextPane textPaneOutput;
-	private JCheckBox checkBoxApply;
+	private JCheckBoxMenuItem checkBoxMenuItemApply;
 	private JPanel panelFunction;
 	private JPanel panelNat;
 	private JPanel panelBool;
@@ -89,6 +95,269 @@ public class JLambdaCoreFrame extends JFrame {
 		setTitle("LambdaCore - Lambda Calculus Calculator");
 		setBounds(100, 100, 1024, 768);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+
+		JMenu menuFile = new JMenu("File");
+		menuFile.setMnemonic('f');
+		menuBar.add(menuFile);
+		
+		JMenuItem menuItemExit = new JMenuItem("Exit");
+		menuItemExit.setMnemonic('x');
+		menuItemExit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JLambdaCoreFrame.this.dispose();
+			}
+		});
+		menuFile.add(menuItemExit);
+
+		JMenu menuEdit = new JMenu("Edit");
+		menuEdit.setMnemonic('e');
+		menuBar.add(menuEdit);
+
+		JMenuItem menuItemUndo = new JMenuItem("Undo");
+		menuItemUndo.setMnemonic('u');
+		menuItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+		menuItemUndo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (undoManager.canUndo())
+					undoManager.undo();
+			}
+		});
+		menuEdit.add(menuItemUndo);
+
+		JMenuItem menuItemRedo = new JMenuItem("Redo");
+		menuItemRedo.setMnemonic('r');
+		menuItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+		menuItemRedo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (undoManager.canRedo())
+					undoManager.redo();
+			}
+		});
+		menuEdit.add(menuItemRedo);
+
+		menuEdit.add(new JSeparator());
+
+		JMenuItem menuItemLambda = new JMenuItem("Lambda");
+		menuItemLambda.setMnemonic('l');
+		menuItemLambda.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK));
+		menuItemLambda.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textPaneInput.replaceSelection("λ");
+			}
+		});
+		menuEdit.add(menuItemLambda);
+
+		JMenu menuSource = new JMenu("Source");
+		menuSource.setMnemonic('s');
+		menuBar.add(menuSource);
+
+		JMenu menuExport = new JMenu("Export");
+		menuExport.setMnemonic('o');
+		menuSource.add(menuExport);
+
+		JMenuItem menuItemJava = new JMenuItem("Java");
+		menuExport.add(menuItemJava);
+		menuItemJava.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
+					true, PrettyPrint.printLambda$default$6()));
+			}
+		});
+		menuItemJava.setMnemonic('j');
+
+		JMenuItem menuItemScala = new JMenuItem("Scala");
+		menuExport.add(menuItemScala);
+		menuItemScala.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		menuItemScala.setMnemonic('s');
+
+		JMenuItem menuItemClojure = new JMenuItem("Clojure");
+		menuExport.add(menuItemClojure);
+		menuItemClojure.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		menuItemClojure.setMnemonic('c');
+
+		JMenuItem menuItemJavaScript = new JMenuItem("JavaScript");
+		menuExport.add(menuItemJavaScript);
+		menuItemJavaScript.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		menuItemJavaScript.setMnemonic('a');
+
+		JMenuItem menuItemHaskell = new JMenuItem("Haskell");
+		menuExport.add(menuItemHaskell);
+		menuItemHaskell.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				textPaneOutput.setText(PrettyPrint.printLambda(term,
+					new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
+					PrettyPrint.printLambda$default$6()));
+			}
+		});
+		menuItemHaskell.setMnemonic('h');
+
+		JMenu menuRun = new JMenu("Run");
+		menuRun.setMnemonic('r');
+		menuBar.add(menuRun);
+
+		JMenu menuPrettyPrint = new JMenu("PrettyPrint");
+		menuPrettyPrint.setMnemonic('p');
+		menuRun.add(menuPrettyPrint);
+
+		checkBoxMenuItemOmitRedundantGroup = new JCheckBoxMenuItem("OmitRedundantGroup");
+		checkBoxMenuItemOmitRedundantGroup.setMnemonic('o');
+		checkBoxMenuItemOmitRedundantGroup.setSelected(true);
+		menuPrettyPrint.add(checkBoxMenuItemOmitRedundantGroup);
+
+		checkBoxMenuItemUncurryingAbstraction = new JCheckBoxMenuItem("UncurryingAbstraction");
+		checkBoxMenuItemUncurryingAbstraction.setMnemonic('u');
+		checkBoxMenuItemUncurryingAbstraction.setSelected(true);
+		menuPrettyPrint.add(checkBoxMenuItemUncurryingAbstraction);
+
+		checkBoxMenuItemChainApplication = new JCheckBoxMenuItem("ChainApplication");
+		checkBoxMenuItemChainApplication.setMnemonic('c');
+		checkBoxMenuItemChainApplication.setSelected(true);
+		menuPrettyPrint.add(checkBoxMenuItemChainApplication);
+
+		JMenu menuDependencies = new JMenu("Dependencies");
+		menuDependencies.setMnemonic('d');
+		menuRun.add(menuDependencies);
+
+		checkBoxMenuItemApply = new JCheckBoxMenuItem("Apply");
+		checkBoxMenuItemApply.setMnemonic('a');
+		checkBoxMenuItemApply.setSelected(true);
+		checkBoxMenuItemApply.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				buildCombinatorPanel();
+			}
+		});
+		menuDependencies.add(checkBoxMenuItemApply);
+
+		JMenuItem menuItemSolve = new JMenuItem("Solve");
+		menuItemSolve.setMnemonic('s');
+		menuItemSolve.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		menuItemSolve.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						Parser.parse$default$3());
+				if (parserResult.isLeft()) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+					return;
+				}
+				Term term = parserResult.right().get()._2;
+				Set<String> freeVariables = JavaConversions
+					.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
+					.map(Identifier::name).collect(Collectors.toSet());
+				Set<String> numberLiteralDependencies = new HashSet<>();
+				Set<String> satisfiedDependencies = new HashSet<>();
+				Set<String> unsatisfiedDependencies = new HashSet<>();
+				freeVariables.forEach(freeVariable -> (lambdaTermBuilder.parseNatLiteral(freeVariable).isPresent()
+					? numberLiteralDependencies
+					: applyTermMap.containsKey(freeVariable) ? satisfiedDependencies : unsatisfiedDependencies)
+						.add(freeVariable));
+				int optionSelected = JOptionPane.showConfirmDialog(JLambdaCoreFrame.this,
+					"Number literal: " + numberLiteralDependencies + "\n" + "Satisfied: " + satisfiedDependencies + "\n"
+						+ "Unsatisfied: " + unsatisfiedDependencies + "\n" + "Apply available dependencies?",
+					"Solved new dependencies", JOptionPane.OK_CANCEL_OPTION);
+				if (optionSelected == JOptionPane.OK_OPTION) {
+					String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
+						(s, lit) -> s + lit + ";");
+					if (!textPaneApplyNumberLiteral.getText().isEmpty()
+						&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
+						applyNumberLiteral = ";" + applyNumberLiteral;
+					textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
+					satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
+				}
+				buildCombinatorPanel();
+			}
+		});
+		menuDependencies.add(menuItemSolve);
+
+		JMenuItem menuItemClear = new JMenuItem("Clear");
+		menuItemClear.setMnemonic('c');
+		menuItemClear.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		menuItemClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textPaneApplyNumberLiteral.setText("");
+				lambdaTermBuilder.bindingMap.keySet().forEach(variable -> applyTermMap.put(variable, false));
+				buildCombinatorPanel();
+			}
+		});
+		menuDependencies.add(menuItemClear);
+
+		JMenu menuHelp = new JMenu("Help");
+		menuHelp.setMnemonic('h');
+		menuBar.add(menuHelp);
+
+		JMenuItem menuItemAbout = new JMenuItem("About");
+		menuItemAbout.setMnemonic('a');
+		menuItemAbout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+					"LambdaCore - Lambda Calculus Calculator\n\nAuthor: Yu Xuanchi (yuxuanchiadm@126.com)");
+			}
+		});
+		menuHelp.add(menuItemAbout);
 
 		panelCombinator = new JPanel();
 		getContentPane().add(panelCombinator, BorderLayout.NORTH);
@@ -128,26 +397,6 @@ public class JLambdaCoreFrame extends JFrame {
 		getContentPane().add(panelControl, BorderLayout.SOUTH);
 		panelControl.setLayout(new BoxLayout(panelControl, BoxLayout.Y_AXIS));
 
-		JPanel panelPrettyPrint = new JPanel();
-		FlowLayout flowLayout_5 = (FlowLayout) panelPrettyPrint.getLayout();
-		flowLayout_5.setAlignment(FlowLayout.LEFT);
-		panelControl.add(panelPrettyPrint);
-
-		JLabel lblPrettyPrint = new JLabel("PrettyPrint:");
-		panelPrettyPrint.add(lblPrettyPrint);
-
-		checkBoxOmitRedundantGroup = new JCheckBox("OmitRedundantGroup");
-		checkBoxOmitRedundantGroup.setSelected(true);
-		panelPrettyPrint.add(checkBoxOmitRedundantGroup);
-
-		checkBoxUncurryingAbstraction = new JCheckBox("UncurryingAbstraction");
-		checkBoxUncurryingAbstraction.setSelected(true);
-		panelPrettyPrint.add(checkBoxUncurryingAbstraction);
-
-		checkBoxChainApplication = new JCheckBox("ChainApplication");
-		checkBoxChainApplication.setSelected(true);
-		panelPrettyPrint.add(checkBoxChainApplication);
-
 		JPanel panelReduction = new JPanel();
 		panelControl.add(panelReduction);
 
@@ -182,9 +431,9 @@ public class JLambdaCoreFrame extends JFrame {
 					}
 					boolean headOnly = checkBoxBetaReduceHeadOnly.isSelected();
 					boolean evaluationOnly = checkBoxBetaReduceEvaluationOnly.isSelected();
-					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
-					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
-					boolean chainApplication = checkBoxChainApplication.isSelected();
+					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
+					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
+					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
 						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
@@ -243,9 +492,9 @@ public class JLambdaCoreFrame extends JFrame {
 					}
 					boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
 					boolean evaluationOnly = checkBoxEtaConversionEvaluationOnly.isSelected();
-					boolean omitRedundantGroup = checkBoxOmitRedundantGroup.isSelected();
-					boolean uncurryingAbstraction = checkBoxUncurryingAbstraction.isSelected();
-					boolean chainApplication = checkBoxChainApplication.isSelected();
+					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
+					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
+					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
 						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
@@ -273,204 +522,6 @@ public class JLambdaCoreFrame extends JFrame {
 		});
 		panelEtaConversion.add(buttonEtaConversion);
 
-		JPanel panelExport = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) panelExport.getLayout();
-		flowLayout.setAlignment(FlowLayout.LEFT);
-		panelControl.add(panelExport);
-
-		JLabel lblExport = new JLabel("Export:");
-		panelExport.add(lblExport);
-
-		JButton buttonJava = new JButton("Java");
-		buttonJava.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
-					true, PrettyPrint.printLambda$default$6()));
-			}
-		});
-		panelExport.add(buttonJava);
-
-		JButton buttonScala = new JButton("Scala");
-		buttonScala.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false, true,
-					PrettyPrint.printLambda$default$6()));
-			}
-		});
-		panelExport.add(buttonScala);
-
-		JButton buttonClojure = new JButton("Clojure");
-		buttonClojure.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
-					PrettyPrint.printLambda$default$6()));
-			}
-		});
-		panelExport.add(buttonClojure);
-
-		JButton buttonJavaScript = new JButton("JavaScript");
-		buttonJavaScript.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
-					PrettyPrint.printLambda$default$6()));
-			}
-		});
-		panelExport.add(buttonJavaScript);
-
-		JButton buttonHaskell = new JButton("Haskell");
-		buttonHaskell.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
-					PrettyPrint.printLambda$default$6()));
-			}
-		});
-		panelExport.add(buttonHaskell);
-
-		JPanel panelDependencies = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panelDependencies.getLayout();
-		flowLayout_1.setAlignment(FlowLayout.LEFT);
-		panelControl.add(panelDependencies);
-
-		JLabel lblDependencies = new JLabel("Dependencies: ");
-		panelDependencies.add(lblDependencies);
-
-		JButton buttonSolve = new JButton("Solve");
-		buttonSolve.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
-					return;
-				}
-				Term term = parserResult.right().get()._2;
-				Set<String> freeVariables = JavaConversions
-					.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
-					.map(Identifier::name).collect(Collectors.toSet());
-				Set<String> numberLiteralDependencies = new HashSet<>();
-				Set<String> satisfiedDependencies = new HashSet<>();
-				Set<String> unsatisfiedDependencies = new HashSet<>();
-				freeVariables.forEach(freeVariable -> (lambdaTermBuilder.parseNatLiteral(freeVariable).isPresent()
-					? numberLiteralDependencies
-					: applyTermMap.containsKey(freeVariable) ? satisfiedDependencies : unsatisfiedDependencies)
-						.add(freeVariable));
-				int optionSelected = JOptionPane.showConfirmDialog(JLambdaCoreFrame.this,
-					"Number literal: " + numberLiteralDependencies + "\n" + "Satisfied: " + satisfiedDependencies + "\n"
-						+ "Unsatisfied: " + unsatisfiedDependencies + "\n" + "Apply available dependencies?",
-					"Solved new dependencies", JOptionPane.OK_CANCEL_OPTION);
-				if (optionSelected == JOptionPane.OK_OPTION) {
-					String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
-						(s, lit) -> s + lit + ";");
-					if (!textPaneApplyNumberLiteral.getText().isEmpty()
-						&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
-						applyNumberLiteral = ";" + applyNumberLiteral;
-					textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
-					satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
-				}
-				buildCombinatorPanel();
-			}
-		});
-
-		checkBoxApply = new JCheckBox("Apply");
-		panelDependencies.add(checkBoxApply);
-		checkBoxApply.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buildCombinatorPanel();
-			}
-		});
-		panelDependencies.add(buttonSolve);
-
-		JButton buttonClear = new JButton("Clear");
-		buttonClear.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textPaneApplyNumberLiteral.setText("");
-				lambdaTermBuilder.bindingMap.keySet().forEach(variable -> applyTermMap.put(variable, false));
-				buildCombinatorPanel();
-			}
-		});
-		panelDependencies.add(buttonClear);
-
-		JPanel panelOther = new JPanel();
-		FlowLayout fl_panelOther = (FlowLayout) panelOther.getLayout();
-		fl_panelOther.setAlignment(FlowLayout.LEFT);
-		panelControl.add(panelOther);
-
-		JButton buttonLambda = new JButton("Lambda");
-		buttonLambda.setToolTipText("Ctrl+L");
-		buttonLambda.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textPaneInput.replaceSelection("λ");
-			}
-		});
-
-		JButton buttonUndo = new JButton("Undo");
-		buttonUndo.setToolTipText("Ctrl+Z");
-		buttonUndo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (undoManager.canUndo())
-					undoManager.undo();
-			}
-		});
-		panelOther.add(buttonUndo);
-
-		JButton buttonRedo = new JButton("Redo");
-		buttonRedo.setToolTipText("Ctrl+Y");
-		buttonRedo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (undoManager.canRedo())
-					undoManager.redo();
-			}
-		});
-		panelOther.add(buttonRedo);
-		panelOther.add(buttonLambda);
-
 		JSplitPane splitPaneLambdaTerm = new JSplitPane();
 		splitPaneLambdaTerm.setResizeWeight(0.5);
 		getContentPane().add(splitPaneLambdaTerm, BorderLayout.CENTER);
@@ -488,18 +539,6 @@ public class JLambdaCoreFrame extends JFrame {
 
 		textPaneInput = new JTextPane();
 		textPaneInput.getDocument().addUndoableEditListener(undoManager);
-		textPaneInput.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.isControlDown())
-					if (e.getKeyCode() == KeyEvent.VK_Z && undoManager.canUndo())
-						undoManager.undo();
-					else if (e.getKeyCode() == KeyEvent.VK_Y && undoManager.canRedo())
-						undoManager.redo();
-					else if (e.getKeyCode() == KeyEvent.VK_L)
-						textPaneInput.replaceSelection("λ");
-			}
-		});
 		scrollPaneInput.setViewportView(textPaneInput);
 
 		JPanel panelOutput = new JPanel();
@@ -560,7 +599,7 @@ public class JLambdaCoreFrame extends JFrame {
 	}
 
 	public void buildCombinatorPanel() {
-		boolean isApplyDependencies = checkBoxApply.isSelected();
+		boolean isApplyDependencies = checkBoxMenuItemApply.isSelected();
 
 		Set<String> functionCombinatorSet = lambdaTermBuilder.categoryMap.get("function");
 		Set<String> natCombinatorSet = lambdaTermBuilder.categoryMap.get("nat");
@@ -700,7 +739,7 @@ public class JLambdaCoreFrame extends JFrame {
 	}
 
 	public String applyDependencies(String term) {
-		if (!checkBoxApply.isSelected())
+		if (!checkBoxMenuItemApply.isSelected())
 			return term;
 		Set<String> dependencies = applyTermMap.entrySet().stream().filter(Entry::getValue).map(Entry::getKey)
 			.collect(Collectors.toCollection(HashSet::new));
