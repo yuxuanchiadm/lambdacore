@@ -1,6 +1,8 @@
 package org.lambdacore.gui;
 
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -102,7 +104,7 @@ public class JLambdaCoreFrame extends JFrame {
 		JMenu menuFile = new JMenu("File");
 		menuFile.setMnemonic('f');
 		menuBar.add(menuFile);
-		
+
 		JMenuItem menuItemExit = new JMenuItem("Exit");
 		menuItemExit.setMnemonic('x');
 		menuItemExit.addActionListener(new ActionListener() {
@@ -163,17 +165,28 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemJava);
 		menuItemJava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
+						new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
+						true, PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
-					true, PrettyPrint.printLambda$default$6()));
 			}
 		});
 		menuItemJava.setMnemonic('j');
@@ -182,17 +195,28 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemScala);
 		menuItemScala.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
+						new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false,
+						true, PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false, true,
-					PrettyPrint.printLambda$default$6()));
 			}
 		});
 		menuItemScala.setMnemonic('s');
@@ -201,17 +225,28 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemClojure);
 		menuItemClojure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					textPaneOutput.setText(PrettyPrint.printLambda(term,
+						new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
+						PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
-					PrettyPrint.printLambda$default$6()));
 			}
 		});
 		menuItemClojure.setMnemonic('c');
@@ -220,17 +255,28 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemJavaScript);
 		menuItemJavaScript.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					textPaneOutput.setText(PrettyPrint.printLambda(term,
+						new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
+						PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
-					PrettyPrint.printLambda$default$6()));
 			}
 		});
 		menuItemJavaScript.setMnemonic('a');
@@ -239,17 +285,28 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemHaskell);
 		menuItemHaskell.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					textPaneOutput.setText(PrettyPrint.printLambda(term,
+						new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
+						PrettyPrint.printLambda$default$6()));
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				textPaneOutput.setText(PrettyPrint.printLambda(term,
-					new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
-					PrettyPrint.printLambda$default$6()));
 			}
 		});
 		menuItemHaskell.setMnemonic('h');
@@ -294,48 +351,61 @@ public class JLambdaCoreFrame extends JFrame {
 
 		JMenuItem menuItemSolve = new JMenuItem("Solve");
 		menuItemSolve.setMnemonic('s');
-		menuItemSolve.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		menuItemSolve.setAccelerator(
+			KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		menuItemSolve.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-					.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
-						Parser.parse$default$3());
-				if (parserResult.isLeft()) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Parser Error: " + parserResult.left().get());
+				try {
+					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
+						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+							Parser.parse$default$3());
+					if (parserResult.isLeft()) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
+							"Parser Error: " + parserResult.left().get());
+						return;
+					}
+					Term term = parserResult.right().get()._2;
+					Set<String> freeVariables = JavaConversions
+						.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
+						.map(Identifier::name).collect(Collectors.toSet());
+					Set<String> numberLiteralDependencies = new HashSet<>();
+					Set<String> satisfiedDependencies = new HashSet<>();
+					Set<String> unsatisfiedDependencies = new HashSet<>();
+					freeVariables.forEach(freeVariable -> (lambdaTermBuilder.parseNatLiteral(freeVariable).isPresent()
+						? numberLiteralDependencies
+						: applyTermMap.containsKey(freeVariable) ? satisfiedDependencies : unsatisfiedDependencies)
+							.add(freeVariable));
+					int optionSelected = JOptionPane.showConfirmDialog(JLambdaCoreFrame.this,
+						"Number literal: " + numberLiteralDependencies + "\n" + "Satisfied: " + satisfiedDependencies
+							+ "\n" + "Unsatisfied: " + unsatisfiedDependencies + "\n" + "Apply available dependencies?",
+						"Solved new dependencies", JOptionPane.OK_CANCEL_OPTION);
+					if (optionSelected == JOptionPane.OK_OPTION) {
+						String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
+							(s, lit) -> s + lit + ";");
+						if (!textPaneApplyNumberLiteral.getText().isEmpty()
+							&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
+							applyNumberLiteral = ";" + applyNumberLiteral;
+						textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
+						satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
+					}
+					buildCombinatorPanel();
+				} catch (Throwable ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
-				Term term = parserResult.right().get()._2;
-				Set<String> freeVariables = JavaConversions
-					.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
-					.map(Identifier::name).collect(Collectors.toSet());
-				Set<String> numberLiteralDependencies = new HashSet<>();
-				Set<String> satisfiedDependencies = new HashSet<>();
-				Set<String> unsatisfiedDependencies = new HashSet<>();
-				freeVariables.forEach(freeVariable -> (lambdaTermBuilder.parseNatLiteral(freeVariable).isPresent()
-					? numberLiteralDependencies
-					: applyTermMap.containsKey(freeVariable) ? satisfiedDependencies : unsatisfiedDependencies)
-						.add(freeVariable));
-				int optionSelected = JOptionPane.showConfirmDialog(JLambdaCoreFrame.this,
-					"Number literal: " + numberLiteralDependencies + "\n" + "Satisfied: " + satisfiedDependencies + "\n"
-						+ "Unsatisfied: " + unsatisfiedDependencies + "\n" + "Apply available dependencies?",
-					"Solved new dependencies", JOptionPane.OK_CANCEL_OPTION);
-				if (optionSelected == JOptionPane.OK_OPTION) {
-					String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
-						(s, lit) -> s + lit + ";");
-					if (!textPaneApplyNumberLiteral.getText().isEmpty()
-						&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
-						applyNumberLiteral = ";" + applyNumberLiteral;
-					textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
-					satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
-				}
-				buildCombinatorPanel();
 			}
 		});
 		menuDependencies.add(menuItemSolve);
 
 		JMenuItem menuItemClear = new JMenuItem("Clear");
 		menuItemClear.setMnemonic('c');
-		menuItemClear.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		menuItemClear.setAccelerator(
+			KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		menuItemClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textPaneApplyNumberLiteral.setText("");
@@ -454,7 +524,11 @@ public class JLambdaCoreFrame extends JFrame {
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
 					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					ex.printStackTrace();
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -515,7 +589,11 @@ public class JLambdaCoreFrame extends JFrame {
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
 					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					ex.printStackTrace();
+					StringWriter stringWriter = new StringWriter();
+					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+						ex.printStackTrace(printWriter);
+					}
+					textPaneOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
