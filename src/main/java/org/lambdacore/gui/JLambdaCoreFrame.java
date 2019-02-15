@@ -27,7 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -36,6 +35,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 
 import org.lambdacore.core.LambdaTermBuilder;
 import org.lambdacore.core.LambdaTermBuilder.Binding;
@@ -70,8 +70,8 @@ public class JLambdaCoreFrame extends JFrame {
 	private JCheckBox checkBoxBetaReduceEvaluationOnly;
 	private JCheckBox checkBoxEtaConversionHeadOnly;
 	private JCheckBox checkBoxEtaConversionEvaluationOnly;
-	private JTextPane textPaneInput;
-	private JTextPane textPaneOutput;
+	private JTextArea textAreaInput;
+	private JTextArea textAreaOutput;
 	private JCheckBoxMenuItem checkBoxMenuItemApply;
 	private JPanel panelFunction;
 	private JPanel panelNat;
@@ -80,7 +80,7 @@ public class JLambdaCoreFrame extends JFrame {
 	private JPanel panelList;
 	private JPanel panelCombinator;
 	private JTextField textFieldNumberLiteral;
-	private JTextPane textPaneApplyNumberLiteral;
+	private JTextArea textAreaApplyNumberLiteral;
 
 	private int numSave = 8;
 	private String[] saveArray;
@@ -148,7 +148,7 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemLambda.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK));
 		menuItemLambda.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				textPaneInput.replaceSelection("λ");
+				textAreaInput.replaceSelection("λ");
 			}
 		});
 		menuEdit.add(menuItemLambda);
@@ -167,7 +167,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -175,7 +175,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					Term term = parserResult.right().get()._2;
-					textPaneOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
+					textAreaOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
 						new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
 						true, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -184,7 +184,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -197,7 +197,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -205,7 +205,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					Term term = parserResult.right().get()._2;
-					textPaneOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
+					textAreaOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
 						new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false,
 						true, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -214,7 +214,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -227,7 +227,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -235,7 +235,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					Term term = parserResult.right().get()._2;
-					textPaneOutput.setText(PrettyPrint.printLambda(term,
+					textAreaOutput.setText(PrettyPrint.printLambda(term,
 						new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
 						PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -244,7 +244,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -257,7 +257,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -265,7 +265,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					Term term = parserResult.right().get()._2;
-					textPaneOutput.setText(PrettyPrint.printLambda(term,
+					textAreaOutput.setText(PrettyPrint.printLambda(term,
 						new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
 						PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -274,7 +274,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -287,7 +287,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -295,7 +295,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					Term term = parserResult.right().get()._2;
-					textPaneOutput.setText(PrettyPrint.printLambda(term,
+					textAreaOutput.setText(PrettyPrint.printLambda(term,
 						new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
 						PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -304,7 +304,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -357,7 +357,7 @@ public class JLambdaCoreFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -382,10 +382,10 @@ public class JLambdaCoreFrame extends JFrame {
 					if (optionSelected == JOptionPane.OK_OPTION) {
 						String applyNumberLiteral = numberLiteralDependencies.stream().reduce("",
 							(s, lit) -> s + lit + ";");
-						if (!textPaneApplyNumberLiteral.getText().isEmpty()
-							&& !textPaneApplyNumberLiteral.getText().endsWith(";"))
+						if (!textAreaApplyNumberLiteral.getText().isEmpty()
+							&& !textAreaApplyNumberLiteral.getText().endsWith(";"))
 							applyNumberLiteral = ";" + applyNumberLiteral;
-						textPaneApplyNumberLiteral.setText(textPaneApplyNumberLiteral.getText() + applyNumberLiteral);
+						textAreaApplyNumberLiteral.setText(textAreaApplyNumberLiteral.getText() + applyNumberLiteral);
 						satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
 					}
 					buildCombinatorPanel();
@@ -395,7 +395,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -408,7 +408,7 @@ public class JLambdaCoreFrame extends JFrame {
 			KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		menuItemClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				textPaneApplyNumberLiteral.setText("");
+				textAreaApplyNumberLiteral.setText("");
 				lambdaTermBuilder.bindingMap.keySet().forEach(variable -> applyTermMap.put(variable, false));
 				buildCombinatorPanel();
 			}
@@ -505,7 +505,7 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -519,7 +519,7 @@ public class JLambdaCoreFrame extends JFrame {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
 							"Beta reducer not halt in " + maxStep + " step");
 					Term resultTerm = betaReducerResult._2;
-					textPaneOutput.setText(
+					textAreaOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -528,7 +528,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -570,7 +570,7 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
 					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textPaneInput.getText())), Parser.parse$default$2(),
+						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
 							Parser.parse$default$3());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
@@ -584,7 +584,7 @@ public class JLambdaCoreFrame extends JFrame {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
 							"Eta converter not halt in " + maxStep + " step");
 					Term resultTerm = etaConverterResult._2;
-					textPaneOutput.setText(
+					textAreaOutput.setText(
 						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
 							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
 				} catch (Throwable ex) {
@@ -593,7 +593,7 @@ public class JLambdaCoreFrame extends JFrame {
 					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
 						ex.printStackTrace(printWriter);
 					}
-					textPaneOutput.setText(stringWriter.toString());
+					textAreaOutput.setText(stringWriter.toString());
 					return;
 				}
 			}
@@ -615,9 +615,9 @@ public class JLambdaCoreFrame extends JFrame {
 		JScrollPane scrollPaneInput = new JScrollPane();
 		panelInput.add(scrollPaneInput, BorderLayout.CENTER);
 
-		textPaneInput = new JTextPane();
-		textPaneInput.getDocument().addUndoableEditListener(undoManager);
-		scrollPaneInput.setViewportView(textPaneInput);
+		textAreaInput = new JTextArea();
+		textAreaInput.getDocument().addUndoableEditListener(undoManager);
+		scrollPaneInput.setViewportView(textAreaInput);
 
 		JPanel panelOutput = new JPanel();
 		splitPaneLambdaTerm.setRightComponent(panelOutput);
@@ -630,9 +630,9 @@ public class JLambdaCoreFrame extends JFrame {
 		JScrollPane scrollPaneOutput = new JScrollPane();
 		panelOutput.add(scrollPaneOutput, BorderLayout.CENTER);
 
-		textPaneOutput = new JTextPane();
-		textPaneOutput.setEditable(false);
-		scrollPaneOutput.setViewportView(textPaneOutput);
+		textAreaOutput = new JTextArea();
+		textAreaOutput.setEditable(false);
+		scrollPaneOutput.setViewportView(textAreaOutput);
 
 		JPanel panelSave = new JPanel();
 		getContentPane().add(panelSave, BorderLayout.WEST);
@@ -646,7 +646,7 @@ public class JLambdaCoreFrame extends JFrame {
 			buttonSave.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					saveArray[currentSaveSlot] = textPaneInput.getText();
+					saveArray[currentSaveSlot] = textAreaInput.getText();
 				}
 			});
 			panelSave.add(buttonSave);
@@ -663,15 +663,15 @@ public class JLambdaCoreFrame extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (saveArray[currentSaveSlot] != null)
-						textPaneInput.setText(saveArray[currentSaveSlot]);
+						textAreaInput.setText(saveArray[currentSaveSlot]);
 				}
 			});
 			panelLoad.add(buttonLoad);
 		}
 
 		textFieldNumberLiteral = new JTextField("0");
-		textPaneApplyNumberLiteral = new JTextPane();
-		textPaneApplyNumberLiteral.setText("#0; #1;\n#2 - 3");
+		textAreaApplyNumberLiteral = new JTextArea();
+		textAreaApplyNumberLiteral.setText("#0; #1;\n#2 - 3");
 
 		buildCombinatorPanel();
 	}
@@ -732,7 +732,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						textPaneInput.setText(lambdaTermBuilder.bindingMap.get(combinator).getTerm());
+						textAreaInput.setText(lambdaTermBuilder.bindingMap.get(combinator).getTerm());
 					}
 				});
 				panel.add(button);
@@ -756,8 +756,8 @@ public class JLambdaCoreFrame extends JFrame {
 			JScrollPane scrollPane = new JScrollPane();
 			popupMenu.add(scrollPane);
 
-			textPaneApplyNumberLiteral.setPreferredSize(new Dimension(400, 200));
-			scrollPane.setViewportView(textPaneApplyNumberLiteral);
+			textAreaApplyNumberLiteral.setPreferredSize(new Dimension(400, 200));
+			scrollPane.setViewportView(textAreaApplyNumberLiteral);
 		} else {
 			textFieldNumberLiteral.setColumns(10);
 			panel.add(textFieldNumberLiteral);
@@ -773,7 +773,7 @@ public class JLambdaCoreFrame extends JFrame {
 						return;
 					}
 					String result = lambdaTermBuilder.buildNatLiteral(lit);
-					textPaneInput.setText(result);
+					textAreaInput.setText(result);
 				}
 			});
 			panel.add(button);
@@ -782,7 +782,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 	public Set<String> getApplyNumberLiteral() {
 		Set<String> applyNumberLiteral = new HashSet<>();
-		for (String pat : textPaneApplyNumberLiteral.getText().split(";")) {
+		for (String pat : textAreaApplyNumberLiteral.getText().split(";")) {
 			pat = pat.trim();
 			if (pat.isEmpty() || (pat.startsWith("#")))
 				continue;
