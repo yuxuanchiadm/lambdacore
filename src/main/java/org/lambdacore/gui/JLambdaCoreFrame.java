@@ -63,13 +63,13 @@ public class JLambdaCoreFrame extends JFrame {
 
 	private LambdaTermBuilder lambdaTermBuilder;
 	private UndoManager undoManager;
-	private JTextField textFieldBetaReduceMaxStep;
+	private JTextField textFieldBetaReductionMaxStep;
 	private JTextField textFieldEtaConversionMaxStep;
 	private JCheckBoxMenuItem checkBoxMenuItemOmitRedundantGroup;
 	private JCheckBoxMenuItem checkBoxMenuItemUncurryingAbstraction;
 	private JCheckBoxMenuItem checkBoxMenuItemChainApplication;
-	private JCheckBox checkBoxBetaReduceHeadOnly;
-	private JCheckBox checkBoxBetaReduceEvaluationOnly;
+	private JCheckBox checkBoxBetaReductionHeadOnly;
+	private JCheckBox checkBoxBetaReductionEvaluationOnly;
 	private JCheckBox checkBoxEtaConversionHeadOnly;
 	private JCheckBox checkBoxEtaConversionEvaluationOnly;
 	private JTextArea textAreaInput;
@@ -98,7 +98,7 @@ public class JLambdaCoreFrame extends JFrame {
 		undoManager = new UndoManager();
 
 		setTitle("LambdaCore - Lambda Calculus Calculator");
-		setBounds(100, 100, 1024, 768);
+		setBounds(100, 100, 1280, 768);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -168,29 +168,43 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemJava);
 		menuItemJava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Java", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Exporting lambda term...");
+						String result = "interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
+							new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false,
+							false, true, PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					textAreaOutput.setText("interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
-						new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false, false,
-						true, PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
@@ -200,29 +214,43 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemScala);
 		menuItemScala.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Scala", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Exporting lambda term...");
+						String result = "trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
+							new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false,
+							true, PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					textAreaOutput.setText("trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
-						new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false,
-						true, PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
@@ -232,29 +260,43 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemClojure);
 		menuItemClojure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Clojure", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Exporting lambda term...");
+						String result = PrettyPrint.printLambda(term,
+							new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false,
+							true, PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					textAreaOutput.setText(PrettyPrint.printLambda(term,
-						new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false, true,
-						PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
@@ -264,29 +306,43 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemJavaScript);
 		menuItemJavaScript.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "JavaScript", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Exporting lambda term...");
+						String result = PrettyPrint.printLambda(term,
+							new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
+							PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					textAreaOutput.setText(PrettyPrint.printLambda(term,
-						new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
-						PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
@@ -296,29 +352,43 @@ public class JLambdaCoreFrame extends JFrame {
 		menuExport.add(menuItemHaskell);
 		menuItemHaskell.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Haskell", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Exporting lambda term...");
+						String result = PrettyPrint.printLambda(term,
+							new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
+							PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					textAreaOutput.setText(PrettyPrint.printLambda(term,
-						new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
-						PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
@@ -368,21 +438,42 @@ public class JLambdaCoreFrame extends JFrame {
 			KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		menuItemSolve.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
+				String input = textAreaInput.getText();
+
+				Set<String> freeVariables = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Solve", (repoter) -> {
+					repoter.setTotolProgress(2);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Finding free variables...");
+						Set<String> result = JavaConversions
+							.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
+							.map(Identifier::name).collect(Collectors.toSet());
+						repoter.setCurrentProgress(2);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
 					}
-					Term term = parserResult.right().get()._2;
-					Set<String> freeVariables = JavaConversions
-						.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
-						.map(Identifier::name).collect(Collectors.toSet());
+				}).execute();
+
+				if (freeVariables != null) {
 					Set<String> numberLiteralDependencies = new HashSet<>();
 					Set<String> satisfiedDependencies = new HashSet<>();
 					Set<String> unsatisfiedDependencies = new HashSet<>();
@@ -404,14 +495,6 @@ public class JLambdaCoreFrame extends JFrame {
 						satisfiedDependencies.forEach(dependency -> applyTermMap.put(dependency, true));
 					}
 					buildCombinatorPanel();
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
-					return;
 				}
 			}
 		});
@@ -485,72 +568,88 @@ public class JLambdaCoreFrame extends JFrame {
 		JPanel panelReduction = new JPanel();
 		panelControl.add(panelReduction);
 
-		JPanel panelBetaReduce = new JPanel();
-		panelBetaReduce.setBackground(Color.ORANGE);
-		panelReduction.add(panelBetaReduce);
+		JPanel panelBetaReduction = new JPanel();
+		panelBetaReduction.setBackground(Color.ORANGE);
+		panelReduction.add(panelBetaReduction);
 
-		JLabel lblBetaReduceMaxStep = new JLabel("MaxStep:");
-		panelBetaReduce.add(lblBetaReduceMaxStep);
+		JLabel lblBetaReductionMaxStep = new JLabel("MaxStep:");
+		panelBetaReduction.add(lblBetaReductionMaxStep);
 
-		textFieldBetaReduceMaxStep = new JTextField();
-		textFieldBetaReduceMaxStep.setText("255");
-		panelBetaReduce.add(textFieldBetaReduceMaxStep);
-		textFieldBetaReduceMaxStep.setColumns(10);
+		textFieldBetaReductionMaxStep = new JTextField();
+		textFieldBetaReductionMaxStep.setText("255");
+		panelBetaReduction.add(textFieldBetaReductionMaxStep);
+		textFieldBetaReductionMaxStep.setColumns(10);
 
-		checkBoxBetaReduceHeadOnly = new JCheckBox("HeadOnly");
-		panelBetaReduce.add(checkBoxBetaReduceHeadOnly);
+		checkBoxBetaReductionHeadOnly = new JCheckBox("HeadOnly");
+		panelBetaReduction.add(checkBoxBetaReductionHeadOnly);
 
-		checkBoxBetaReduceEvaluationOnly = new JCheckBox("EvaluationOnly");
-		panelBetaReduce.add(checkBoxBetaReduceEvaluationOnly);
+		checkBoxBetaReductionEvaluationOnly = new JCheckBox("EvaluationOnly");
+		panelBetaReduction.add(checkBoxBetaReductionEvaluationOnly);
 
-		JButton buttonBetaReduce = new JButton("Beta Reduce");
-		buttonBetaReduce.addActionListener(new ActionListener() {
+		JButton buttonBetaReduction = new JButton("Beta Reduction");
+		buttonBetaReduction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int maxStep;
 				try {
-					int maxStep;
-					try {
-						maxStep = Integer.parseInt(textFieldBetaReduceMaxStep.getText());
-					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
-						return;
-					}
-					boolean headOnly = checkBoxBetaReduceHeadOnly.isSelected();
-					boolean evaluationOnly = checkBoxBetaReduceEvaluationOnly.isSelected();
-					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
-					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
-					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
-					}
-					Term term = parserResult.right().get()._2;
-					Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, maxStep, headOnly,
-						evaluationOnly);
-					if (!betaReducerResult._1.equals(Boolean.TRUE))
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Beta reducer not halt in " + maxStep + " step");
-					Term resultTerm = betaReducerResult._2;
-					textAreaOutput.setText(
-						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
-							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
+					maxStep = Integer.parseInt(textFieldBetaReductionMaxStep.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
 					return;
+				}
+				boolean headOnly = checkBoxBetaReductionHeadOnly.isSelected();
+				boolean evaluationOnly = checkBoxBetaReductionEvaluationOnly.isSelected();
+				boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
+				boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
+				boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
+
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Beta Reduction", (repoter) -> {
+					repoter.setTotolProgress(3);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Beta reducing lambda term...");
+						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, maxStep, headOnly,
+							evaluationOnly);
+						if (!betaReducerResult._1.equals(Boolean.TRUE))
+							repoter.sendMessage("[Warning] Beta reducer not halt in " + maxStep + " step");
+						Term resultTerm = betaReducerResult._2;
+						repoter.setCurrentProgress(2);
+						repoter.sendMessage("[Info] Printing lambda term...");
+						String result = PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
+							omitRedundantGroup, uncurryingAbstraction, chainApplication,
+							PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(3);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
+					}
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
-		panelBetaReduce.add(buttonBetaReduce);
+		panelBetaReduction.add(buttonBetaReduction);
 
 		JPanel panelEtaConversion = new JPanel();
 		panelEtaConversion.setBackground(Color.GREEN);
@@ -573,47 +672,63 @@ public class JLambdaCoreFrame extends JFrame {
 		JButton buttonEtaConversion = new JButton("Eta Conversion");
 		buttonEtaConversion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int maxStep;
 				try {
-					int maxStep;
-					try {
-						maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
-					} catch (NumberFormatException ex) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
-						return;
-					}
-					boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
-					boolean evaluationOnly = checkBoxEtaConversionEvaluationOnly.isSelected();
-					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
-					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
-					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
-					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
-						.runLambdaParser(
-							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
-							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
-							Compiler.runLambdaParser$default$4());
-					if (parserResult.isLeft()) {
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error:\n" + parserResult.left().get());
-						return;
-					}
-					Term term = parserResult.right().get()._2;
-					Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, maxStep, headOnly,
-						evaluationOnly);
-					if (!etaConverterResult._1.equals(Boolean.TRUE))
-						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Eta converter not halt in " + maxStep + " step");
-					Term resultTerm = etaConverterResult._2;
-					textAreaOutput.setText(
-						PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(), omitRedundantGroup,
-							uncurryingAbstraction, chainApplication, PrettyPrint.printLambda$default$6()));
-				} catch (Throwable ex) {
-					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Internal Error: " + ex.toString());
-					StringWriter stringWriter = new StringWriter();
-					try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
-						ex.printStackTrace(printWriter);
-					}
-					textAreaOutput.setText(stringWriter.toString());
+					maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
 					return;
+				}
+				boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
+				boolean evaluationOnly = checkBoxEtaConversionEvaluationOnly.isSelected();
+				boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
+				boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
+				boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
+
+				String input = textAreaInput.getText();
+
+				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Eta Conversion", (repoter) -> {
+					repoter.setTotolProgress(3);
+					try {
+						repoter.setCurrentProgress(0);
+						repoter.sendMessage("[Info] Parsing lambda term...");
+						Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+							.runLambdaParser(Text$.MODULE$.apply(applyDependencies(input), Text.apply$default$2()),
+								Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+								Compiler.runLambdaParser$default$4());
+						if (parserResult.isLeft()) {
+							repoter.sendMessage("[Warning] Can not parser lambda term\n" + parserResult.left().get());
+							return null;
+						}
+						Term term = parserResult.right().get()._2;
+						repoter.setCurrentProgress(1);
+						repoter.sendMessage("[Info] Eta converting lambda term...");
+						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, maxStep, headOnly,
+							evaluationOnly);
+						if (!etaConverterResult._1.equals(Boolean.TRUE))
+							repoter.sendMessage("[Warning] Eta converter not halt in " + maxStep + " step");
+						Term resultTerm = etaConverterResult._2;
+						repoter.setCurrentProgress(2);
+						repoter.sendMessage("[Info] Printing lambda term...");
+						String result = PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
+							omitRedundantGroup, uncurryingAbstraction, chainApplication,
+							PrettyPrint.printLambda$default$6());
+						repoter.setCurrentProgress(3);
+						return result;
+					} catch (Throwable ex) {
+						StringWriter stringWriter = new StringWriter();
+						try (PrintWriter printWriter = new PrintWriter(stringWriter)) {
+							ex.printStackTrace(printWriter);
+						}
+						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
+						return null;
+					} finally {
+						repoter.setCompleted(true);
+					}
+				}).execute();
+
+				if (output != null) {
+					textAreaOutput.setText(output);
 				}
 			}
 		});
