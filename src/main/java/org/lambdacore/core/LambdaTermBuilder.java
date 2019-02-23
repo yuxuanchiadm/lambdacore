@@ -367,11 +367,21 @@ public class LambdaTermBuilder {
 	public String buildNatLiteral(int lit) {
 		StringBuilder builder = new StringBuilder("λf.λx.");
 		for (int i = 0; i < lit; i++)
-			builder.append("(f ");
+			builder.append(i == 0 ? "f " : "(f ");
 		builder.append("x");
 		for (int i = 0; i < lit; i++)
-			builder.append(")");
+			builder.append(i == 0 ? "" : ")");
 		return builder.toString();
+	}
+
+	public String buildBinaryNatLiteral(int lit) {
+		if (lit < 0)
+			throw new ArithmeticException();
+		String binaryNat = (lit & (1 << 0)) != 0 ? buildNatLiteral(1) : buildNatLiteral(0);
+		for (int i = 1; i < 31; i++)
+			if ((lit & (1 << i)) != 0)
+				binaryNat = "a ((" + buildNatLiteral(i) + ") (" + buildNatLiteral(2) + ")) (" + binaryNat + ")";
+		return "(λa." + binaryNat + ") (λm.λn.λf.λx.m f (n f x))";
 	}
 
 	public Optional<Integer> parseNatLiteral(String lit) {

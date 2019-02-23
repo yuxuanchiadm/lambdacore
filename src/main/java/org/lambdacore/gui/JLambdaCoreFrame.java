@@ -82,6 +82,7 @@ public class JLambdaCoreFrame extends JFrame {
 	private JPanel panelList;
 	private JPanel panelCombinator;
 	private JTextField textFieldNumberLiteral;
+	private JCheckBox checkBoxBinaryLiteral;
 	private JTextArea textAreaApplyNumberLiteral;
 
 	private int numSave = 8;
@@ -780,6 +781,9 @@ public class JLambdaCoreFrame extends JFrame {
 			textFieldNumberLiteral.setColumns(10);
 			panel.add(textFieldNumberLiteral);
 
+			checkBoxBinaryLiteral = new JCheckBox("binaryLiteral");
+			panel.add(checkBoxBinaryLiteral);
+
 			JButton button = new JButton("encodeLiteral");
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -790,7 +794,12 @@ public class JLambdaCoreFrame extends JFrame {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse number literal");
 						return;
 					}
-					String result = lambdaTermBuilder.buildNatLiteral(lit);
+					if (lit < 0) {
+						JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Natural number can not be negative");
+						return;
+					}
+					String result = checkBoxBinaryLiteral.isSelected() ? lambdaTermBuilder.buildBinaryNatLiteral(lit)
+						: lambdaTermBuilder.buildNatLiteral(lit);
 					textAreaInput.setText(result);
 				}
 			});
