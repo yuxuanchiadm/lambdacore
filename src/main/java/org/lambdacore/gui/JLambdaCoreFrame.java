@@ -1,7 +1,6 @@
 package org.lambdacore.gui;
 
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +40,10 @@ import org.lambdacore.core.LambdaTermBuilder;
 import org.lambdacore.core.LambdaTermBuilder.Binding;
 import org.lamcalcj.ast.Lambda.Identifier;
 import org.lamcalcj.ast.Lambda.Term;
-import org.lamcalcj.parser.syntax.Parser;
+import org.lamcalcj.compiler.Compiler;
+import org.lamcalcj.parser.Parser.ParserError;
+import org.lamcalcj.parser.Text;
+import org.lamcalcj.parser.Text$;
 import org.lamcalcj.pretty.PrettyPrint;
 import org.lamcalcj.pretty.Symbols;
 import org.lamcalcj.reducer.BetaReducer;
@@ -166,12 +168,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemJava.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -196,12 +200,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemScala.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -226,12 +232,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemClojure.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -256,12 +264,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemJavaScript.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -286,12 +296,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemHaskell.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -356,12 +368,14 @@ public class JLambdaCoreFrame extends JFrame {
 		menuItemSolve.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -504,12 +518,14 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
 					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
@@ -569,12 +585,14 @@ public class JLambdaCoreFrame extends JFrame {
 					boolean omitRedundantGroup = checkBoxMenuItemOmitRedundantGroup.isSelected();
 					boolean uncurryingAbstraction = checkBoxMenuItemUncurryingAbstraction.isSelected();
 					boolean chainApplication = checkBoxMenuItemChainApplication.isSelected();
-					Either<String, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Parser
-						.parse(new StringReader(applyDependencies(textAreaInput.getText())), Parser.parse$default$2(),
-							Parser.parse$default$3());
+					Either<ParserError, Tuple2<scala.collection.immutable.Map<String, Identifier>, Term>> parserResult = Compiler
+						.runLambdaParser(
+							Text$.MODULE$.apply(applyDependencies(textAreaInput.getText()), Text.apply$default$2()),
+							Compiler.runLambdaParser$default$2(), Compiler.runLambdaParser$default$3(),
+							Compiler.runLambdaParser$default$4());
 					if (parserResult.isLeft()) {
 						JOptionPane.showMessageDialog(JLambdaCoreFrame.this,
-							"Parser Error: " + parserResult.left().get());
+							"Parser Error:\n" + parserResult.left().get());
 						return;
 					}
 					Term term = parserResult.right().get()._2;
