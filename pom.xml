@@ -10,31 +10,39 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>lamcalcj-maven</id>
+			<name>lamcalcj-maven</name>
+			<url>https://dl.bintray.com/yuxuanchiadm/lamcalcj-maven</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.lamcalcj</groupId>
 			<artifactId>lamcalcj-ast</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lamcalcj</groupId>
 			<artifactId>lamcalcj-compiler</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lamcalcj</groupId>
 			<artifactId>lamcalcj-pretty-print</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lamcalcj</groupId>
 			<artifactId>lamcalcj-reducer</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lamcalcj</groupId>
 			<artifactId>lamcalcj-utils</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
