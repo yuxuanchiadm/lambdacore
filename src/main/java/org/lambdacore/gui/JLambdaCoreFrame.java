@@ -648,8 +648,8 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Beta reducing lambda term...");
-						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, Option.apply(maxStep), headOnly,
-							evaluationOnly);
+						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, Option.apply(maxStep),
+							headOnly, evaluationOnly);
 						if (!betaReducerResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Beta reducer not halt in " + maxStep + " step");
 						Term resultTerm = betaReducerResult._2;
@@ -661,6 +661,8 @@ public class JLambdaCoreFrame extends JFrame {
 							PrettyPrint.printLambda$default$6());
 						timer.next("Printing");
 						repoter.setCurrentProgress(3);
+						repoter.sendMessage("[Info] Term statistics: Size(" + term.size() + " -> " + resultTerm.size()
+							+ ") Depth(" + term.depth() + " -> " + resultTerm.depth() + ")");
 						return result;
 					} catch (Throwable ex) {
 						StringWriter stringWriter = new StringWriter();
@@ -736,8 +738,8 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Eta converting lambda term...");
-						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, Option.apply(maxStep), headOnly,
-							evaluationOnly);
+						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term,
+							Option.apply(maxStep), headOnly, evaluationOnly);
 						if (!etaConverterResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Eta converter not halt in " + maxStep + " step");
 						Term resultTerm = etaConverterResult._2;
@@ -749,6 +751,8 @@ public class JLambdaCoreFrame extends JFrame {
 							PrettyPrint.printLambda$default$6());
 						timer.next("Printing");
 						repoter.setCurrentProgress(3);
+						repoter.sendMessage("[Info] Term statistics: Size(" + term.size() + " -> " + resultTerm.size()
+							+ ") Depth(" + term.depth() + " -> " + resultTerm.depth() + ")");
 						return result;
 					} catch (Throwable ex) {
 						StringWriter stringWriter = new StringWriter();
