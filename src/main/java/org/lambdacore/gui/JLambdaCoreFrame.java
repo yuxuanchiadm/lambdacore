@@ -50,6 +50,7 @@ import org.lamcalcj.reducer.BetaReducer;
 import org.lamcalcj.reducer.EtaConverter;
 import org.lamcalcj.utils.Utils;
 
+import scala.Option;
 import scala.Tuple2;
 import scala.collection.JavaConversions;
 import scala.util.Either;
@@ -620,7 +621,7 @@ public class JLambdaCoreFrame extends JFrame {
 						Term term = parserResult.right().get()._2;
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Beta reducing lambda term...");
-						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, maxStep, headOnly,
+						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, Option.apply(maxStep), headOnly,
 							evaluationOnly);
 						if (!betaReducerResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Beta reducer not halt in " + maxStep + " step");
@@ -703,7 +704,7 @@ public class JLambdaCoreFrame extends JFrame {
 						Term term = parserResult.right().get()._2;
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Eta converting lambda term...");
-						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, maxStep, headOnly,
+						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, Option.apply(maxStep), headOnly,
 							evaluationOnly);
 						if (!etaConverterResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Eta converter not halt in " + maxStep + " step");
