@@ -38,6 +38,7 @@ import javax.swing.JTextArea;
 
 import org.lambdacore.core.LambdaTermBuilder;
 import org.lambdacore.core.LambdaTermBuilder.Binding;
+import org.lambdacore.utils.Timer;
 import org.lamcalcj.ast.Lambda.Identifier;
 import org.lamcalcj.ast.Lambda.Term;
 import org.lamcalcj.compiler.Compiler;
@@ -173,6 +174,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Java", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -185,11 +187,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Exporting lambda term...");
 						String result = "interface L extends Function<L, L> {}\n\n" + PrettyPrint.printLambda(term,
 							new Symbols("", "", "", "", "(L) ", "", " -> ", "", "", "", "(", ")", ").apply("), false,
 							false, true, PrettyPrint.printLambda$default$6());
+						timer.next("Exporting");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -200,6 +204,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -219,6 +224,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Scala", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -231,11 +237,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Exporting lambda term...");
 						String result = "trait L extends Function[L, L]\n\n" + PrettyPrint.printLambda(term,
 							new Symbols("", "", "", "", "", "", " => ", "(", ": L)", "", "(", ")", ")("), false, false,
 							true, PrettyPrint.printLambda$default$6());
+						timer.next("Exporting");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -246,6 +254,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -265,6 +274,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Clojure", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -277,11 +287,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Exporting lambda term...");
 						String result = PrettyPrint.printLambda(term,
 							new Symbols("", "", "", "", "(fn ", ")", " ", "[", "]", "", "(", ")", " "), false, false,
 							true, PrettyPrint.printLambda$default$6());
+						timer.next("Exporting");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -292,6 +304,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -311,6 +324,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "JavaScript", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -323,11 +337,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Exporting lambda term...");
 						String result = PrettyPrint.printLambda(term,
 							new Symbols("", "", "", "", "", "", " => ", "", "", "", "(", ")", ")("), false, false, true,
 							PrettyPrint.printLambda$default$6());
+						timer.next("Exporting");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -338,6 +354,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -357,6 +374,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Haskell", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -369,11 +387,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Exporting lambda term...");
 						String result = PrettyPrint.printLambda(term,
 							new Symbols("(", ")", "", "", "\\", "", "", "", " -> ", " ", "", "", " "), true, true, true,
 							PrettyPrint.printLambda$default$6());
+						timer.next("Exporting");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -384,6 +404,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -443,6 +464,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				Set<String> freeVariables = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Solve", (repoter) -> {
 					repoter.setTotolProgress(2);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -455,11 +477,13 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Finding free variables...");
 						Set<String> result = JavaConversions
 							.setAsJavaSet(Utils.freeVariables(term, Utils.freeVariables$default$2())).stream()
 							.map(Identifier::name).collect(Collectors.toSet());
+						timer.next("Solving");
 						repoter.setCurrentProgress(2);
 						return result;
 					} catch (Throwable ex) {
@@ -470,6 +494,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -607,6 +632,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Beta Reduction", (repoter) -> {
 					repoter.setTotolProgress(3);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -619,6 +645,7 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Beta reducing lambda term...");
 						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, Option.apply(maxStep), headOnly,
@@ -626,11 +653,13 @@ public class JLambdaCoreFrame extends JFrame {
 						if (!betaReducerResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Beta reducer not halt in " + maxStep + " step");
 						Term resultTerm = betaReducerResult._2;
+						timer.next("Reducing");
 						repoter.setCurrentProgress(2);
 						repoter.sendMessage("[Info] Printing lambda term...");
 						String result = PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
 							omitRedundantGroup, uncurryingAbstraction, chainApplication,
 							PrettyPrint.printLambda$default$6());
+						timer.next("Printing");
 						repoter.setCurrentProgress(3);
 						return result;
 					} catch (Throwable ex) {
@@ -641,6 +670,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
@@ -690,6 +720,7 @@ public class JLambdaCoreFrame extends JFrame {
 
 				String output = new JAsyncTaskDialog<>(JLambdaCoreFrame.this, "Eta Conversion", (repoter) -> {
 					repoter.setTotolProgress(3);
+					Timer timer = new Timer();
 					try {
 						repoter.setCurrentProgress(0);
 						repoter.sendMessage("[Info] Parsing lambda term...");
@@ -702,6 +733,7 @@ public class JLambdaCoreFrame extends JFrame {
 							return null;
 						}
 						Term term = parserResult.right().get()._2;
+						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Eta converting lambda term...");
 						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term, Option.apply(maxStep), headOnly,
@@ -709,11 +741,13 @@ public class JLambdaCoreFrame extends JFrame {
 						if (!etaConverterResult._1.equals(Boolean.TRUE))
 							repoter.sendMessage("[Warning] Eta converter not halt in " + maxStep + " step");
 						Term resultTerm = etaConverterResult._2;
+						timer.next("Converting");
 						repoter.setCurrentProgress(2);
 						repoter.sendMessage("[Info] Printing lambda term...");
 						String result = PrettyPrint.printLambda(resultTerm, PrettyPrint.printLambda$default$2(),
 							omitRedundantGroup, uncurryingAbstraction, chainApplication,
 							PrettyPrint.printLambda$default$6());
+						timer.next("Printing");
 						repoter.setCurrentProgress(3);
 						return result;
 					} catch (Throwable ex) {
@@ -724,6 +758,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Error] Internal Error: " + stringWriter.toString());
 						return null;
 					} finally {
+						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
 				}).execute();
