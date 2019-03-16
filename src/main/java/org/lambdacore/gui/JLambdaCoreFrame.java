@@ -49,6 +49,8 @@ import org.lamcalcj.pretty.PrettyPrint;
 import org.lamcalcj.pretty.Symbols;
 import org.lamcalcj.reducer.BetaReducer;
 import org.lamcalcj.reducer.EtaConverter;
+import org.lamcalcj.reducer.Result;
+import org.lamcalcj.reducer.Strategy;
 import org.lamcalcj.utils.Utils;
 
 import scala.Option;
@@ -66,7 +68,11 @@ public class JLambdaCoreFrame extends JFrame {
 	private LambdaTermBuilder lambdaTermBuilder;
 	private UndoManager undoManager;
 	private JTextField textFieldBetaReductionMaxStep;
+	private JTextField textFieldBetaReductionMaxSize;
+	private JTextField textFieldBetaReductionMaxDepth;
 	private JTextField textFieldEtaConversionMaxStep;
+	private JTextField textFieldEtaConversionMaxSize;
+	private JTextField textFieldEtaConversionMaxDepth;
 	private JCheckBoxMenuItem checkBoxMenuItemOmitRedundantGroup;
 	private JCheckBoxMenuItem checkBoxMenuItemUncurryingAbstraction;
 	private JCheckBoxMenuItem checkBoxMenuItemChainApplication;
@@ -100,7 +106,7 @@ public class JLambdaCoreFrame extends JFrame {
 		undoManager = new UndoManager();
 
 		setTitle("LambdaCore - Lambda Calculus Calculator");
-		setBounds(100, 100, 1280, 768);
+		setBounds(100, 100, 1024, 768);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -589,10 +595,11 @@ public class JLambdaCoreFrame extends JFrame {
 
 		JPanel panelControl = new JPanel();
 		getContentPane().add(panelControl, BorderLayout.SOUTH);
-		panelControl.setLayout(new BoxLayout(panelControl, BoxLayout.Y_AXIS));
+		panelControl.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		JPanel panelReduction = new JPanel();
 		panelControl.add(panelReduction);
+		panelReduction.setLayout(new BoxLayout(panelReduction, BoxLayout.Y_AXIS));
 
 		JPanel panelBetaReduction = new JPanel();
 		panelBetaReduction.setBackground(Color.ORANGE);
@@ -605,6 +612,22 @@ public class JLambdaCoreFrame extends JFrame {
 		textFieldBetaReductionMaxStep.setText("255");
 		panelBetaReduction.add(textFieldBetaReductionMaxStep);
 		textFieldBetaReductionMaxStep.setColumns(10);
+
+		JLabel lblBetaReductionMaxSize = new JLabel("MaxSize:");
+		panelBetaReduction.add(lblBetaReductionMaxSize);
+
+		textFieldBetaReductionMaxSize = new JTextField();
+		textFieldBetaReductionMaxSize.setText("2147483647");
+		panelBetaReduction.add(textFieldBetaReductionMaxSize);
+		textFieldBetaReductionMaxSize.setColumns(10);
+
+		JLabel lblBetaReductionMaxDepth = new JLabel("MaxDepth:");
+		panelBetaReduction.add(lblBetaReductionMaxDepth);
+
+		textFieldBetaReductionMaxDepth = new JTextField();
+		textFieldBetaReductionMaxDepth.setText("2147483647");
+		panelBetaReduction.add(textFieldBetaReductionMaxDepth);
+		textFieldBetaReductionMaxDepth.setColumns(10);
 
 		checkBoxBetaReductionHeadOnly = new JCheckBox("HeadOnly");
 		panelBetaReduction.add(checkBoxBetaReductionHeadOnly);
@@ -620,6 +643,20 @@ public class JLambdaCoreFrame extends JFrame {
 					maxStep = Integer.parseInt(textFieldBetaReductionMaxStep.getText());
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
+					return;
+				}
+				int maxSize;
+				try {
+					maxSize = Integer.parseInt(textFieldBetaReductionMaxSize.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max size");
+					return;
+				}
+				int maxDepth;
+				try {
+					maxDepth = Integer.parseInt(textFieldBetaReductionMaxDepth.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max depth");
 					return;
 				}
 				boolean headOnly = checkBoxBetaReductionHeadOnly.isSelected();
@@ -648,11 +685,12 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Beta reducing lambda term...");
-						Tuple2<Object, Term> betaReducerResult = BetaReducer.betaReduction(term, Option.apply(maxStep),
-							headOnly, evaluationOnly);
-						if (!betaReducerResult._1.equals(Boolean.TRUE))
-							repoter.sendMessage("[Warning] Beta reducer not halt in " + maxStep + " step");
-						Term resultTerm = betaReducerResult._2;
+						Result betaReducerResult = BetaReducer.betaReduction(term, new Strategy(Option.apply(maxStep),
+							Option.apply(maxSize), Option.apply(maxDepth), headOnly, evaluationOnly));
+						if (!betaReducerResult.abortReason().successful())
+							repoter.sendMessage("[Warning] Beta reducer failed at " + betaReducerResult.step()
+								+ " step: " + betaReducerResult.abortReason());
+						Term resultTerm = betaReducerResult.term();
 						timer.next("Reducing");
 						repoter.setCurrentProgress(2);
 						repoter.sendMessage("[Info] Printing lambda term...");
@@ -696,6 +734,22 @@ public class JLambdaCoreFrame extends JFrame {
 		textFieldEtaConversionMaxStep.setColumns(10);
 		panelEtaConversion.add(textFieldEtaConversionMaxStep);
 
+		JLabel lblEtaConversionMaxSize = new JLabel("MaxSize:");
+		panelEtaConversion.add(lblEtaConversionMaxSize);
+
+		textFieldEtaConversionMaxSize = new JTextField();
+		textFieldEtaConversionMaxSize.setText("2147483647");
+		textFieldEtaConversionMaxSize.setColumns(10);
+		panelEtaConversion.add(textFieldEtaConversionMaxSize);
+
+		JLabel lblEtaConversionMaxDepth = new JLabel("MaxDepth:");
+		panelEtaConversion.add(lblEtaConversionMaxDepth);
+
+		textFieldEtaConversionMaxDepth = new JTextField();
+		textFieldEtaConversionMaxDepth.setText("2147483647");
+		textFieldEtaConversionMaxDepth.setColumns(10);
+		panelEtaConversion.add(textFieldEtaConversionMaxDepth);
+
 		checkBoxEtaConversionHeadOnly = new JCheckBox("HeadOnly");
 		panelEtaConversion.add(checkBoxEtaConversionHeadOnly);
 
@@ -710,6 +764,20 @@ public class JLambdaCoreFrame extends JFrame {
 					maxStep = Integer.parseInt(textFieldEtaConversionMaxStep.getText());
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max step");
+					return;
+				}
+				int maxSize;
+				try {
+					maxSize = Integer.parseInt(textFieldEtaConversionMaxSize.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max size");
+					return;
+				}
+				int maxDepth;
+				try {
+					maxDepth = Integer.parseInt(textFieldEtaConversionMaxDepth.getText());
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(JLambdaCoreFrame.this, "Can not parse max depth");
 					return;
 				}
 				boolean headOnly = checkBoxEtaConversionHeadOnly.isSelected();
@@ -738,11 +806,12 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Eta converting lambda term...");
-						Tuple2<Object, Term> etaConverterResult = EtaConverter.etaConversion(term,
-							Option.apply(maxStep), headOnly, evaluationOnly);
-						if (!etaConverterResult._1.equals(Boolean.TRUE))
-							repoter.sendMessage("[Warning] Eta converter not halt in " + maxStep + " step");
-						Term resultTerm = etaConverterResult._2;
+						Result etaConverterResult = EtaConverter.etaConversion(term, new Strategy(Option.apply(maxStep),
+							Option.apply(maxSize), Option.apply(maxDepth), headOnly, evaluationOnly));
+						if (!etaConverterResult.abortReason().successful())
+							repoter.sendMessage("[Warning] Eta converter failed at " + etaConverterResult.step()
+								+ " step: " + etaConverterResult.abortReason());
+						Term resultTerm = etaConverterResult.term();
 						timer.next("Converting");
 						repoter.setCurrentProgress(2);
 						repoter.sendMessage("[Info] Printing lambda term...");
