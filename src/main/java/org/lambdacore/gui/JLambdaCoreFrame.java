@@ -213,7 +213,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -263,7 +263,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -313,7 +313,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -363,7 +363,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -413,7 +413,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -503,7 +503,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (freeVariables != null) {
 					Set<String> numberLiteralDependencies = new HashSet<>();
@@ -685,8 +685,15 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Beta reducing lambda term...");
-						Result betaReducerResult = BetaReducer.betaReduction(term, new Strategy(Option.apply(maxStep),
-							Option.apply(maxSize), Option.apply(maxDepth), headOnly, evaluationOnly));
+						Result betaReducerResult;
+						try {
+							betaReducerResult = BetaReducer.interruptibleBetaReduction(term,
+								new Strategy(Option.apply(maxStep), Option.apply(maxSize), Option.apply(maxDepth),
+									headOnly, evaluationOnly));
+						} catch (InterruptedException ex) {
+							repoter.sendMessage("[Info] Interrupted by user");
+							return null;
+						}
 						if (!betaReducerResult.abortReason().successful())
 							repoter.sendMessage("[Warning] Beta reducer failed at " + betaReducerResult.step()
 								+ " step: " + betaReducerResult.abortReason());
@@ -713,7 +720,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);
@@ -806,8 +813,15 @@ public class JLambdaCoreFrame extends JFrame {
 						timer.next("Parsing");
 						repoter.setCurrentProgress(1);
 						repoter.sendMessage("[Info] Eta converting lambda term...");
-						Result etaConverterResult = EtaConverter.etaConversion(term, new Strategy(Option.apply(maxStep),
-							Option.apply(maxSize), Option.apply(maxDepth), headOnly, evaluationOnly));
+						Result etaConverterResult;
+						try {
+							etaConverterResult = EtaConverter.interruptibleEtaConversion(term,
+								new Strategy(Option.apply(maxStep), Option.apply(maxSize), Option.apply(maxDepth),
+									headOnly, evaluationOnly));
+						} catch (InterruptedException ex) {
+							repoter.sendMessage("[Info] Interrupted by user");
+							return null;
+						}
 						if (!etaConverterResult.abortReason().successful())
 							repoter.sendMessage("[Warning] Eta converter failed at " + etaConverterResult.step()
 								+ " step: " + etaConverterResult.abortReason());
@@ -834,7 +848,7 @@ public class JLambdaCoreFrame extends JFrame {
 						repoter.sendMessage("[Info] Time elapsed:\n" + timer.toMessage());
 						repoter.setCompleted(true);
 					}
-				}).execute();
+				}).execute().orElse(null);
 
 				if (output != null) {
 					textAreaOutput.setText(output);

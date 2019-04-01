@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -28,9 +30,13 @@ public class JAsyncTaskDialog<T> extends JDialog {
 	private final Function<ProgressRepoter, T> task;
 
 	private JTextArea textAreaMessage;
-	private JButton buttonClose;
 	private JLabel labelMessage;
 	private JProgressBar progressBar;
+	private JButton buttonClose;
+	private JButton buttonInterrupt;
+
+	private SwingWorker<T, Void> worker;
+	private boolean isInterrupted = false;
 
 	public JAsyncTaskDialog(JFrame parentFrame, String title, Function<ProgressRepoter, T> task) {
 		super(parentFrame);
@@ -83,6 +89,17 @@ public class JAsyncTaskDialog<T> extends JDialog {
 			}
 		});
 		panelButton.add(buttonClose);
+		
+		buttonInterrupt = new JButton("Interrupt");
+		buttonInterrupt.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				isInterrupted = true;
+				if (worker != null)
+					worker.cancel(true);
+				buttonInterrupt.setEnabled(false);
+			}
+		});
+		panelButton.add(buttonInterrupt);
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -95,7 +112,7 @@ public class JAsyncTaskDialog<T> extends JDialog {
 		pack();
 	}
 
-	public T execute() {
+	public Optional<T> execute() {
 		ProgressRepoter repoter = new ProgressRepoter() {
 			@Override
 			public void setTotolProgress(int progress) {
@@ -130,6 +147,7 @@ public class JAsyncTaskDialog<T> extends JDialog {
 				try {
 					SwingUtilities.invokeAndWait(() -> {
 						buttonClose.setEnabled(completed);
+						buttonInterrupt.setEnabled(!completed);
 					});
 				} catch (InvocationTargetException e) {
 					e.printStackTrace();
@@ -152,7 +170,10 @@ public class JAsyncTaskDialog<T> extends JDialog {
 			}
 		};
 
-		SwingWorker<T, Void> worker = new SwingWorker<T, Void>() {
+		if (isInterrupted)
+			return Optional.empty();
+
+		worker = new SwingWorker<T, Void>() {
 			@Override
 			protected T doInBackground() {
 				return task.apply(repoter);
@@ -160,10 +181,16 @@ public class JAsyncTaskDialog<T> extends JDialog {
 		};
 
 		worker.execute();
+
 		setVisible(true);
 
 		try {
-			return worker.get();
+			Optional<T> result = Optional.ofNullable(worker.get());
+			if (isInterrupted)
+				return Optional.empty();
+			return result;
+		} catch (CancellationException e) {
+			return Optional.empty();
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} catch (ExecutionException e) {
